@@ -1,0 +1,150 @@
+name: Frontend Deploy to VPS (PM2)
+
+on:
+  push:
+    branches:
+      - dev
+      - main
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Environment to deploy
+        required: true
+        type: choice
+        options:
+          - development
+          - production
+
+concurrency:
+  group: frontend-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-development:
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/dev') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development')
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+      - name: Validate development secrets
+        run: |
+          test -n "${{ secrets.DEV_VPS_HOST }}" || (echo "Missing DEV_VPS_HOST" && exit 1)
+          test -n "${{ secrets.DEV_VPS_USER }}" || (echo "Missing DEV_VPS_USER" && exit 1)
+          test -n "${{ secrets.DEV_VPS_PASSWORD }}" || (echo "Missing DEV_VPS_PASSWORD" && exit 1)
+          test -n "${{ secrets.DEV_VPS_PORT }}" || (echo "Missing DEV_VPS_PORT" && exit 1)
+
+      - name: Deploy development over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.DEV_VPS_HOST }}
+          username: ${{ secrets.DEV_VPS_USER }}
+          password: ${{ secrets.DEV_VPS_PASSWORD }}
+          port: ${{ secrets.DEV_VPS_PORT }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            /bin/bash -lc '
+              set -euxo pipefail
+
+              APP_DIR="/var/www/evalhero-web"
+              BRANCH="dev"
+              APP_NAME="evalhero-web-dev"
+
+              export NVM_DIR="$HOME/.nvm"
+              if [ -s "$NVM_DIR/nvm.sh" ]; then
+                . "$NVM_DIR/nvm.sh"
+              fi
+
+              command -v bash >/dev/null 2>&1 || { echo "bash not found"; exit 127; }
+              command -v git >/dev/null 2>&1 || { echo "git not found"; exit 127; }
+              command -v node >/dev/null 2>&1 || { echo "Node not found"; exit 127; }
+              command -v npm >/dev/null 2>&1 || { echo "npm not found"; exit 127; }
+              command -v pm2 >/dev/null 2>&1 || npm install -g pm2
+
+              test -d "$APP_DIR" || { echo "APP_DIR does not exist: $APP_DIR"; exit 1; }
+              cd "$APP_DIR"
+
+              git fetch --all --prune
+              git reset --hard HEAD
+              git checkout "$BRANCH"
+              git reset --hard "origin/$BRANCH"
+
+              npm install --legacy-peer-deps
+              export NODE_OPTIONS="--max-old-space-size=4096"
+              npm run build
+
+              if [[ "$(pm2 pid "$APP_NAME" 2>/dev/null || echo 0)" != "0" ]]; then
+                pm2 reload ecosystem.config.cjs --only "$APP_NAME" --update-env
+              else
+                pm2 start ecosystem.config.cjs --only "$APP_NAME" --update-env
+              fi
+
+              pm2 save
+              echo "Frontend DEV deployment successful"
+            '
+
+  deploy-production:
+    if: |
+      (github.event_name == 'push' && github.ref == 'refs/heads/main') ||
+      (github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production')
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Validate production secrets
+        run: |
+          test -n "${{ secrets.PROD_VPS_HOST }}" || (echo "Missing PROD_VPS_HOST" && exit 1)
+          test -n "${{ secrets.PROD_VPS_USER }}" || (echo "Missing PROD_VPS_USER" && exit 1)
+          test -n "${{ secrets.PROD_VPS_PASSWORD }}" || (echo "Missing PROD_VPS_PASSWORD" && exit 1)
+          test -n "${{ secrets.PROD_VPS_PORT }}" || (echo "Missing PROD_VPS_PORT" && exit 1)
+
+      - name: Deploy production over SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.PROD_VPS_HOST }}
+          username: ${{ secrets.PROD_VPS_USER }}
+          password: ${{ secrets.PROD_VPS_PASSWORD }}
+          port: ${{ secrets.PROD_VPS_PORT }}
+          script_stop: true
+          command_timeout: 30m
+          script: |
+            /bin/bash -lc '
+              set -euxo pipefail
+
+              APP_DIR="/var/www/evalhero-web"
+              BRANCH="main"
+              APP_NAME="evalhero-web-prod"
+
+              export NVM_DIR="$HOME/.nvm"
+              if [ -s "$NVM_DIR/nvm.sh" ]; then
+                . "$NVM_DIR/nvm.sh"
+              fi
+
+              command -v bash >/dev/null 2>&1 || { echo "bash not found"; exit 127; }
+              command -v git >/dev/null 2>&1 || { echo "git not found"; exit 127; }
+              command -v node >/dev/null 2>&1 || { echo "Node not found"; exit 127; }
+              command -v npm >/dev/null 2>&1 || { echo "npm not found"; exit 127; }
+              command -v pm2 >/dev/null 2>&1 || npm install -g pm2
+
+              test -d "$APP_DIR" || { echo "APP_DIR does not exist: $APP_DIR"; exit 1; }
+              cd "$APP_DIR"
+
+              git fetch --all --prune
+              git reset --hard HEAD
+              git checkout "$BRANCH"
+              git reset --hard "origin/$BRANCH"
+
+              npm install --legacy-peer-deps
+              npm run build
+
+              if [[ "$(pm2 pid "$APP_NAME" 2>/dev/null || echo 0)" != "0" ]]; then
+                pm2 reload ecosystem.config.cjs --only "$APP_NAME" --update-env
+              else
+                pm2 start ecosystem.config.cjs --only "$APP_NAME" --update-env
+              fi
+
+              pm2 save
+              echo "Frontend PROD deployment successful"
+            '

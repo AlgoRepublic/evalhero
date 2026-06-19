@@ -1,0 +1,121 @@
+/* react-big-calendar overrides for light/dark theme and mobile */
+[data-theme='dark'] .rbc-calendar,
+[data-theme='dark'] .rbc-off-range-bg {
+  background-color: transparent;
+}
+
+[data-theme='dark'] .rbc-header {
+  border-color: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+}
+
+[data-theme='dark'] .rbc-day-bg {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .rbc-month-view,
+[data-theme='dark'] .rbc-time-view,
+[data-theme='dark'] .rbc-time-header-content {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .rbc-time-slot {
+  border-color: rgba(255, 255, 255, 0.06);
+}
+
+[data-theme='dark'] .rbc-timeslot-group {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+[data-theme='dark'] .rbc-date-cell {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+[data-theme='dark'] .rbc-today {
+  background-color: rgba(255, 255, 255, 0.04);
+}
+
+[data-theme='dark'] .rbc-toolbar button {
+  color: rgba(255, 255, 255, 0.85);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme='dark'] .rbc-toolbar button:hover:not(:disabled) {
+  color: rgba(255, 255, 255, 0.95);
+  border-color: rgba(255, 255, 255, 0.4);
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+[data-theme='dark'] .rbc-toolbar button.rbc-active {
+  color: #4d8bff;
+  border-color: #4d8bff;
+  background-color: rgba(77, 139, 255, 0.12);
+}
+
+[data-theme='dark'] .rbc-toolbar-label {
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 600;
+}
+
+[data-theme='dark'] .rbc-current-time-indicator {
+  background-color: #4d8bff;
+}
+
+[data-theme='dark'] .rbc-show-more {
+  color: #4d8bff;
+  background-color: transparent;
+}
+
+/* Mobile: stack toolbar and reduce padding */
+@media (max-width: 768px) {
+  .rbc-toolbar {
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .rbc-toolbar-label {
+    width: 100%;
+    text-align: center;
+    order: -1;
+    font-size: 1rem;
+  }
+
+  .rbc-month-view,
+  .rbc-time-view {
+    font-size: 0.85rem;
+  }
+
+  .rbc-event {
+    padding: 0 2px;
+    font-size: 0.7rem;
+  }
+
+  .rbc-event-label {
+    font-size: 0.65rem;
+  }
+
+  .rbc-date-cell {
+    padding: 2px;
+  }
+
+  .rbc-header {
+    padding: 4px 2px;
+  }
+}
+
+/* Ensure calendar container has min height and is responsive */
+.rbc-calendar {
+  min-height: 400px;
+}
+
+.calendar-wrapper {
+  height: 100%;
+  min-height: 500px;
+}
+
+@media (max-width: 768px) {
+  .calendar-wrapper {
+    min-height: 450px;
+  }
+}

@@ -1,0 +1,108 @@
+/* HOT PATCH: Force first column to 100px with aggressive word wrapping */
+
+.tiptap .matrix-table-wrapper {
+  table {
+    overflow: visible !important;
+  }
+}
+
+/* Desktop: ensure horizontal overflow works */
+.matrix-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+/* First column: default 100px but can shrink to 50px minimum when many columns */
+.matrix-table-wrapper th.ant-table-cell:first-child,
+.matrix-table-wrapper .ant-table-thead > tr > th:first-child,
+.matrix-table-wrapper .ant-table-thead th:first-child,
+.matrix-table-wrapper td.ant-table-cell:first-child,
+.matrix-table-wrapper .ant-table-tbody > tr > td:first-child,
+.matrix-table-wrapper .ant-table-tbody td:first-child {
+  width: 100px;
+  min-width: 50px;
+  max-width: 100px;
+  background-color: #fff !important;
+  background: #fff !important;
+}
+
+/* First column: aggressive word wrapping with top alignment */
+.matrix-table-wrapper .matrix-row-label-cell {
+  word-break: break-word !important;
+  overflow-wrap: anywhere !important;
+  white-space: normal !important;
+  min-width: 0 !important;
+  vertical-align: top !important;
+}
+
+.matrix-table-wrapper td.ant-table-cell:first-child {
+  vertical-align: top !important;
+}
+
+/* Dark mode support */
+[data-theme='dark'] .matrix-table-wrapper th.ant-table-cell:first-child,
+[data-theme='dark'] .matrix-table-wrapper .ant-table-thead > tr > th:first-child,
+[data-theme='dark'] .matrix-table-wrapper td.ant-table-cell:first-child,
+[data-theme='dark'] .matrix-table-wrapper .ant-table-tbody > tr > td:first-child {
+  background-color: #141414 !important;
+  background: #141414 !important;
+}
+
+/* Handle row hover state - match row background */
+.matrix-table-wrapper .ant-table-tbody > tr:hover > td:first-child,
+.matrix-table-wrapper .ant-table-tbody > tr:hover td.ant-table-cell:first-child {
+  background-color: #fafafa !important;
+  background: #fafafa !important;
+}
+
+[data-theme='dark'] .matrix-table-wrapper .ant-table-tbody > tr:hover > td:first-child,
+[data-theme='dark'] .matrix-table-wrapper .ant-table-tbody > tr:hover td.ant-table-cell:first-child {
+  background-color: #262626 !important;
+  background: #262626 !important;
+}
+
+/* Mobile responsive: touch scroll and containment - enforce 100px */
+@media (max-width: 768px) {
+  .matrix-node-wrapper {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+  .matrix-table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    overflow-y: visible;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-x;
+    margin-left: -2px;
+    margin-right: -2px;
+  }
+
+  .matrix-table-wrapper .ant-table-wrapper {
+    min-width: 0;
+  }
+
+  .matrix-table-wrapper .ant-table {
+    font-size: 12px;
+  }
+
+  .matrix-table-wrapper .ant-table-cell {
+    padding: 4px 6px !important;
+  }
+
+  /* Mobile: 80px default but can shrink to 50px minimum */
+  .matrix-table-wrapper th.ant-table-cell:first-child,
+  .matrix-table-wrapper td.ant-table-cell:first-child {
+    width: 80px;
+    min-width: 50px;
+    max-width: 80px;
+  }
+
+  .matrix-table-wrapper .matrix-row-label-cell {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+    white-space: normal !important;
+    min-width: 0 !important;
+  }
+}
